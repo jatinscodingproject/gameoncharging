@@ -1,27 +1,88 @@
+// const puppeteer = require("puppeteer");
+
+// let browser = null;
+
+// async function getBrowser() {
+//   if (browser) return browser;
+
+//   browser = await puppeteer.launch({
+//     headless: false,
+
+//     executablePath:
+//       "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+
+//     userDataDir: "C:\\puppeteer\\chrome-profile",
+
+//     ignoreHTTPSErrors: true,
+
+//     args: [
+//       "--no-sandbox",
+//       "--disable-setuid-sandbox",
+//       "--disable-features=HttpsFirstMode",
+//       "--disable-web-security",
+//       "--disable-infobars",
+//       "--start-maximized",
+//     ],
+
+//     ignoreDefaultArgs: ["--enable-automation"],
+//   });
+
+//   console.log("🚀 Chrome launched (shared browser)");
+//   return browser;
+// }
+
+// async function closeBrowser() {
+//   if (browser) {
+//     await browser.close();
+//     browser = null;
+//     console.log("🛑 Chrome closed");
+//   }
+// }
+
+// module.exports = { getBrowser, closeBrowser };
+
+
 const puppeteer = require("puppeteer");
+const os = require("os");
 
 let browser = null;
 
 async function getBrowser() {
   if (browser) return browser;
 
+  const isLinux = os.platform() === "linux";
+  const isWindows = os.platform() === "win32";
+
+  let executablePath;
+  let userDataDir;
+
+  if (isLinux) {
+    // Linux paths (your server)
+    executablePath = "/usr/bin/chromium-browser";
+    userDataDir = "/root/puppeteer/chrome-profile";
+  } else if (isWindows) {
+    // Windows paths (local dev)
+    executablePath =
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+    userDataDir = "C:\\puppeteer\\chrome-profile";
+  }
+
   browser = await puppeteer.launch({
-    headless: false,
+    headless: isLinux ? "new" : false,
 
-    executablePath:
-      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-
-    userDataDir: "C:\\puppeteer\\chrome-profile",
+    executablePath,
+    userDataDir,
 
     ignoreHTTPSErrors: true,
 
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-infobars",
       "--disable-features=HttpsFirstMode",
       "--disable-web-security",
-      "--disable-infobars",
-      "--start-maximized",
+      ...(isLinux ? [] : ["--start-maximized"]),
     ],
 
     ignoreDefaultArgs: ["--enable-automation"],
@@ -40,4 +101,3 @@ async function closeBrowser() {
 }
 
 module.exports = { getBrowser, closeBrowser };
-
